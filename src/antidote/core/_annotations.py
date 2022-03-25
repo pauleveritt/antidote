@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import builtins
-import inspect
 from typing import Any, cast, Optional, Tuple
 
 from typing_extensions import Annotated, get_args, get_origin
@@ -9,12 +8,14 @@ from typing_extensions import Annotated, get_args, get_origin
 from ._injection import ArgDependency
 from .annotations import (AntidoteAnnotation, From, FromArg, Get, INJECT_SENTINEL)
 from .injection import Arg
-from .marker import InjectMeMarker, Marker
+from .marker import InjectImplMarker, InjectMeMarker, Marker
 from .._internal import API
 from .._internal.argspec import Argument
+from .._internal.utils import Default
 
 
 @API.private
+@API.deprecated
 def extract_annotated_dependency(type_hint: object) -> object:
     origin = get_origin(type_hint)
 
@@ -83,29 +84,46 @@ def extract_annotated_arg_dependency(argument: Argument) -> object:
     if isinstance(argument.default, Marker):
         from .._constants import LazyConst
 
+        type_hint, origin, args = _extract_type_hint(argument, extras=False)
         marker = argument.default
         dependency: object
         if isinstance(marker, Get):
-            dependency = marker.dependency
+            return ArgDependency(marker.dependency, default=marker.default)
         elif isinstance(marker, LazyConst):
-            dependency = cast(object, marker)
-        elif isinstance(marker, InjectMeMarker):
-            if not is_valid_class_type_hint(type_hint):
-                raise TypeError(
-                    f"Cannot use marker @inject.me with non class type hint: {type_hint}")
-            if marker.source is not None:
-                dependency = Get(type_hint, source=marker.source).dependency
+            return ArgDependency(cast(object, marker))
+        elif isinstance(marker, (InjectMeMarker, InjectImplMarker)):
+            if isinstance(marker, InjectMeMarker):
+                if not is_valid_class_type_hint(type_hint):
+                    raise TypeError(f"Cannot use marker @inject.me with"
+                                    f" non class type hint: {type_hint!r}")
+                if marker.source is not None:
+                    dependency = Get(type_hint, source=marker.source).dependency
+                else:
+                    dependency = type_hint
             else:
-                dependency = type_hint
+                from ..lib.interface import ImplementationsOf
+                from collections.abc import Sequence, Iterable
+
+                if origin in {Sequence, Iterable, list}:
+                    dependency = cast(object, ImplementationsOf(args[0]).all(
+                        *marker.constraints_args,
+                        **marker.constraints_kwargs
+                    ))
+                else:
+                    dependency = cast(object, ImplementationsOf(type_hint).single(
+                        *marker.constraints_args,
+                        **marker.constraints_kwargs
+                    ))
+            return ArgDependency(dependency,
+                                 default=None if argument.is_optional else Default.sentinel)
         else:
             raise TypeError("Custom Marker are NOT supported.")
-
-        return ArgDependency(dependency, optional=argument.is_optional)
 
     return None
 
 
 @API.private
+@API.deprecated
 def extract_auto_provided_arg_dependency(argument: Argument) -> Optional[type]:
     type_hint, origin, args = _extract_type_hint(argument)
     dependency = type_hint
@@ -127,12 +145,14 @@ def extract_auto_provided_arg_dependency(argument: Argument) -> Optional[type]:
 def is_valid_class_type_hint(type_hint: object) -> bool:
     return (getattr(type_hint, '__module__', '') != 'typing'
             and type_hint not in _BUILTINS_TYPES
-            and (isinstance(type_hint, type) and inspect.isclass(type_hint)))
+            and isinstance(type_hint, type))
 
 
 @API.private
-def _extract_type_hint(argument: Argument) -> Tuple[Any, object, Tuple[object, ...]]:
-    type_hint = argument.type_hint_with_extras
+def _extract_type_hint(argument: Argument,
+                       extras: bool = True
+                       ) -> Tuple[Any, Any, Tuple[Any, ...]]:
+    type_hint = argument.type_hint_with_extras if extras else argument.type_hint
     origin = get_origin(type_hint)
     args = get_args(type_hint)
 

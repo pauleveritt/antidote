@@ -56,16 +56,18 @@ class Arguments:
             raise TypeError(f"func must be a callable or a static/class-method. "
                             f"Not a {type(func)}")
         return cls._build(
-            func.__func__ if isinstance(func, (staticmethod, classmethod)) else func,
-            is_unbound_method(func),  # doing it before un-wrapping.
-            ignore_type_hints
+            func=func.__func__ if isinstance(func, (staticmethod, classmethod)) else func,
+            unbound_method=is_unbound_method(func),  # doing it before un-wrapping.
+            ignore_type_hints=ignore_type_hints
         )
 
     @classmethod
     def _build(cls,
+               *,
                func: Callable[..., object],
                unbound_method: bool,
-               ignore_type_hints: bool) -> Arguments:
+               ignore_type_hints: bool
+               ) -> Arguments:
         arguments: List[Argument] = []
         has_var_positional = False
         has_var_keyword = False

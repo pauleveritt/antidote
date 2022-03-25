@@ -20,6 +20,7 @@ _build/
 
 # PyCharm
 .idea
+.venv
 
 # Annotated Cython
 /src/**/*.html
@@ -39,6 +40,7 @@ htmlcov/
 coverage.xml
 .coverage
 .coverage.*
+cov_html/
 
 # NixOS
 .envrc

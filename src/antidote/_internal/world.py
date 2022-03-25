@@ -19,8 +19,8 @@ from .utils.meta import Singleton
 from ..core._annotations import extract_annotated_dependency
 from ..core.annotations import Get
 from ..core.container import RawContainer
-from ..core.exceptions import DependencyNotFoundError
 from ..core.typing import CallableClass, Dependency, Source
+from ..lib.interface import ImplementationsOf, PredicateConstraint
 
 if TYPE_CHECKING:
     pass
@@ -119,15 +119,10 @@ class WorldGet(Singleton):
                      Type[CallableClass[Any]]
                  ]] = None
                  ) -> Any:
-        try:
-            __dependency = cast(Any, extract_annotated_dependency(__dependency))
-            if source is not None:
-                __dependency = Get(__dependency, source=source).dependency
-            return current_container().get(__dependency)
-        except DependencyNotFoundError:
-            if default is not Default.sentinel:
-                return default
-            raise
+        __dependency = cast(Any, extract_annotated_dependency(__dependency))
+        if source is not None:
+            __dependency = Get(__dependency, source=source).dependency
+        return current_container().get(__dependency, default=default)
 
     @API.public
     def __getitem__(self, tpe: Type[T]) -> TypedWorldGet[T]:
@@ -195,14 +190,44 @@ class TypedWorldGet(Generic[T], FinalImmutable):
             __dependency = extract_annotated_dependency(__dependency)
         if source is not None:
             __dependency = Get(cast(Any, __dependency), source=source).dependency
-        try:
-            value = cast(T, current_container().get(__dependency))
-        except DependencyNotFoundError:
-            if default is not Default.sentinel:
-                return default
-            raise
+        value = current_container().get(__dependency, default=default)
+        assert enforce_type_if_possible(value, self.__type)
+        return value
 
-        enforce_type_if_possible(value, self.__type)
+    @API.public
+    def single(self,
+               *constraints: PredicateConstraint[Any],
+               qualified_by: Optional[object | list[object]] = None,
+               qualified_by_one_of: Optional[list[object]] = None,
+               qualified_by_instance_of: Optional[type] = None
+               ) -> T:
+        return self(ImplementationsOf(self.__type).single(
+            *constraints,
+            qualified_by=qualified_by,
+            qualified_by_one_of=qualified_by_one_of,
+            qualified_by_instance_of=qualified_by_instance_of)
+        )
+
+    @API.public
+    def all(self,
+            *constraints: PredicateConstraint[Any],
+            qualified_by: Optional[object | list[object]] = None,
+            qualified_by_one_of: Optional[list[object]] = None,
+            qualified_by_instance_of: Optional[type] = None
+            ) -> list[T]:
+        from antidote import world
+        value = world.get(ImplementationsOf(self.__type).all(
+            *constraints,
+            qualified_by=qualified_by,
+            qualified_by_one_of=qualified_by_one_of,
+            qualified_by_instance_of=qualified_by_instance_of)
+        )
+
+        enforce_type_if_possible(value, list)
+        x: object
+        for x in value:
+            assert enforce_type_if_possible(x, self.__type)
+
         return value
 
     @API.public
@@ -245,11 +270,13 @@ def new_container() -> RawContainer:
 
     from .._providers import (LazyProvider, ServiceProvider,
                               IndirectProvider, FactoryProvider)
+    from ..lib.interface._provider import InterfaceProvider
 
     container = RawContainer()
     container.add_provider(FactoryProvider)
     container.add_provider(LazyProvider)
     container.add_provider(IndirectProvider)
     container.add_provider(ServiceProvider)
+    container.add_provider(InterfaceProvider)
 
     return container

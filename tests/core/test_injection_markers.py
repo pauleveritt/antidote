@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Iterator, Optional
 
 import pytest
 
@@ -7,17 +7,22 @@ from antidote.core.marker import Marker
 from antidote.exceptions import DependencyNotFoundError
 
 
-def test_marker_me():
+@pytest.fixture(autouse=True)
+def setup_world() -> Iterator[None]:
     with world.test.new():
-        @service
-        class MyService:
-            pass
+        yield
 
-        @inject
-        def f(my_service: MyService = inject.me()):
-            return my_service
 
-        assert f() is world.get[MyService]()
+def test_marker_me():
+    @service
+    class MyService:
+        pass
+
+    @inject
+    def f(my_service: MyService = inject.me()):
+        return my_service
+
+    assert f() is world.get[MyService]()
 
 
 def test_invalid_marker_me_missing_dependency():
@@ -46,60 +51,57 @@ def test_invalid_marker_me_wrong_type_hint():
 
 
 def test_marker_me_from():
-    with world.test.new():
-        class MyService:
-            pass
+    class MyService:
+        pass
 
-        @factory
-        def create_service() -> MyService:
-            return MyService()
+    @factory
+    def create_service() -> MyService:
+        return MyService()
 
-        @inject
-        def f(my_service: MyService = inject.me(source=create_service)):
-            return my_service
+    @inject
+    def f(my_service: MyService = inject.me(source=create_service)):
+        return my_service
 
-        assert f() is world.get(MyService, source=create_service)
+    assert f() is world.get(MyService, source=create_service)
 
 
 def test_invalid_marker_me_from_wrong_type_hint():
-    with world.test.new():
-        class MyService:
-            pass
+    class MyService:
+        pass
 
-        @factory
-        def create_service() -> MyService:
-            return MyService()
+    @factory
+    def create_service() -> MyService:
+        return MyService()
 
-        with pytest.raises(TypeError, match=r"(?i).*inject\.me.*"):
-            @inject
-            def f(my_service=inject.me(source=create_service)):
-                return my_service
+    with pytest.raises(TypeError, match=r"(?i).*inject\.me.*"):
+        @inject
+        def f(my_service=inject.me(source=create_service)):
+            return my_service
 
-        with pytest.raises(TypeError, match=r"(?i).*inject\.me.*"):
-            @inject
-            def g(my_service: int = inject.me(source=create_service)):
-                return my_service
+    with pytest.raises(TypeError, match=r"(?i).*inject\.me.*"):
+        @inject
+        def g(my_service: int = inject.me(source=create_service)):
+            return my_service
 
-        class OtherService:
-            pass
+    class OtherService:
+        pass
 
-        with pytest.raises(TypeError, match=r"(?i).*does not match.*"):
-            @inject
-            def h(my_service: OtherService = inject.me(source=create_service)):
-                return my_service
+    with pytest.raises(TypeError, match=r"(?i).*does not match.*"):
+        @inject
+        def h(my_service: OtherService = inject.me(source=create_service)):
+            return my_service
 
 
 def test_marker_get():
-    with world.test.new():
-        @service
-        class MyService:
-            pass
+    @service
+    class MyService:
+        pass
 
-        @inject
-        def f(my_service=inject.get(MyService)):
-            return my_service
+    @inject
+    def f(my_service=inject.get(MyService)):
+        return my_service
 
-        assert f() is world.get[MyService]()
+    assert f() is world.get[MyService]()
 
 
 def test_invalid_marker_get_missing_dependency():
@@ -116,37 +118,35 @@ def test_invalid_marker_get_missing_dependency():
 
 
 def test_marker_from_get():
-    with world.test.new():
-        class MyService:
-            pass
+    class MyService:
+        pass
 
-        @factory
-        def create_service() -> MyService:
-            return MyService()
+    @factory
+    def create_service() -> MyService:
+        return MyService()
 
-        @inject
-        def f(my_service=inject.get(MyService, source=create_service)):
-            return my_service
+    @inject
+    def f(my_service=inject.get(MyService, source=create_service)):
+        return my_service
 
-        assert f() is world.get(MyService, source=create_service)
+    assert f() is world.get(MyService, source=create_service)
 
 
 def test_invalid_marker_from_get_wrong_target():
-    with world.test.new():
-        class MyService:
-            pass
+    class MyService:
+        pass
 
-        @factory
-        def create_service() -> MyService:
-            return MyService()
+    @factory
+    def create_service() -> MyService:
+        return MyService()
 
-        class OtherService:
-            pass
+    class OtherService:
+        pass
 
-        with pytest.raises(TypeError, match=r"(?i).*does not match.*"):
-            @inject
-            def f(my_service: OtherService = inject.me(source=create_service)):
-                return my_service
+    with pytest.raises(TypeError, match=r"(?i).*does not match.*"):
+        @inject
+        def f(my_service: OtherService = inject.me(source=create_service)):
+            return my_service
 
 
 def test_custom_marker():
@@ -160,33 +160,33 @@ def test_custom_marker():
 
 
 def test_marker_me_optional():
-    with world.test.new():
-        @service
-        class MyService:
-            pass
+    @service
+    class MyService:
+        pass
 
-        @inject
-        def f(my_service: Optional[MyService] = inject.me()):
-            return my_service
+    @inject
+    def f(my_service: Optional[MyService] = inject.me()):
+        return my_service
 
-        assert f() is world.get[MyService]()
+    assert f() is world.get[MyService]()
 
-        with world.test.empty():
-            assert f() is None
+    with world.test.empty():
+        assert f() is None
 
-    with world.test.new():
-        class MyService:
-            pass
 
-        @factory
-        def create_service() -> MyService:
-            return MyService()
+def test_marker_me_optional_source():
+    class MyService:
+        pass
 
-        @inject
-        def f(my_service: Optional[MyService] = inject.me(source=create_service)):
-            return my_service
+    @factory
+    def create_service() -> MyService:
+        return MyService()
 
-        assert f() is world.get(MyService, source=create_service)
+    @inject
+    def f(my_service: Optional[MyService] = inject.me(source=create_service)):
+        return my_service
 
-        with world.test.empty():
-            assert f() is None
+    assert f() is world.get(MyService, source=create_service)
+
+    with world.test.empty():
+        assert f() is None

@@ -47,8 +47,8 @@ Utilities
     :members: is_compiled, validated_scope, validate_injection
 
 
-Dependencies
-============
+Lib
+===
 
 
 Service
@@ -91,6 +91,19 @@ Lazy
 ----
 
 .. automodule:: antidote.lazy
+    :members:
+
+
+Interface
+---------
+
+.. automodule:: antidote.lib.interface.interface
+    :members:
+
+.. automodule:: antidote.lib.interface.qualifier
+    :members:
+
+.. automodule:: antidote.lib.interface.predicate
     :members:
 
 

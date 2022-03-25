@@ -25,7 +25,7 @@ class ImplementationProtocol(Protocol[P, T]):
 
     def __rmatmul__(self, klass: type) -> object:  # pragma: no cover
         warnings.warn("Use the new `world.get(<dependency>, source=<implementation>)` syntax.")
-        return  # type: ignore
+        ...
 
     def __antidote_dependency__(self, target: Type[T]) -> object:
         ...  # pragma: no cover
@@ -143,7 +143,7 @@ def implementation(interface: type,
 
         @functools.wraps(func)
         def impl() -> object:
-            dep = func()
+            dep = func()  # type: ignore
             validate_provided_class(dep, expected=interface)
             return dep
 

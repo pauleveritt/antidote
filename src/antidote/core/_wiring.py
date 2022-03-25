@@ -15,7 +15,7 @@ AnyF: TypeAlias = 'Union[Callable[..., object], staticmethod[Any], classmethod[A
 
 @API.private
 def wire_class(cls: C, wiring: Wiring) -> C:
-    if not (isinstance(cls, type) and inspect.isclass(cls)):
+    if not isinstance(cls, type):
         raise TypeError(f"Expecting a class, got a {type(cls)}")
 
     methods: Dict[str, AnyF] = dict()

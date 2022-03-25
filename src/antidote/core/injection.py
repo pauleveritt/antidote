@@ -1,22 +1,22 @@
 from __future__ import annotations
 
 import collections.abc as c_abc
-import inspect
 import warnings
-from typing import (Any, Callable, Generic, Hashable, Iterable, Mapping, Optional,
+from typing import (Any, Callable, Hashable, Iterable, Mapping, Optional,
                     overload,
                     Sequence, Type, TYPE_CHECKING, TypeVar, Union)
 
 from typing_extensions import final, TypeAlias
 
 from .annotations import Get
-from .marker import InjectMeMarker
+from .marker import InjectImplMarker, InjectMeMarker
 from .._internal import API
-from .._internal.utils import FinalImmutable
+from .._internal.utils import Default, FinalImmutable
 from .._internal.utils.meta import Singleton
 
 if TYPE_CHECKING:
     from .typing import CallableClass, Source
+    from ..lib.interface import PredicateConstraint
 
 F = TypeVar('F', bound=Callable[..., Any])
 T = TypeVar('T')
@@ -64,19 +64,6 @@ AUTO_PROVIDE_TYPE: TypeAlias = Optional[Union[
     Iterable[type],  # specific list of classes
     Callable[[type], bool]  # Function determining which classes should be auto provided
 ]]
-
-
-class InjectedCallableMeta(type):
-    def __instancecheck__(self, instance: object) -> bool:
-        from .._internal.wrapper import is_wrapper
-        return is_wrapper(instance)
-
-
-class InjectedCallable(Generic[F], metaclass=InjectedCallableMeta):
-    __wrapped__: F
-
-    def __call__(self, *args: object, **kwargs: object) -> object:
-        ...  # pragma: no cover
 
 
 @API.private  # Use the singleton instance `inject`, not the class directly.
@@ -145,15 +132,35 @@ class Inject(Singleton):
         """
         return InjectMeMarker(source=source)
 
+    @API.public
+    def impl(self,
+             *constraints: PredicateConstraint[Any],
+             qualified_by: Optional[object | list[object]] = None,
+             qualified_by_one_of: Optional[list[object]] = None,
+             qualified_by_instance_of: Optional[type] = None) -> Any:
+        return InjectImplMarker(
+            constraints_args=constraints,
+            constraints_kwargs=dict(
+                qualified_by=qualified_by,
+                qualified_by_one_of=qualified_by_one_of,
+                qualified_by_instance_of=qualified_by_instance_of,
+            )
+        )
+
     @overload
-    def get(self, __dependency: object) -> Any:
+    def get(self,
+            __dependency: object,
+            *,
+            default: object = Default.sentinel
+            ) -> Any:
         ...  # pragma: no cover
 
     @overload
     def get(self,
             __dependency: Type[T],
             *,
-            source: Union[Source[T], Callable[..., T], Type[CallableClass[T]]]
+            source: Union[Source[T], Callable[..., T], Type[CallableClass[T]]],
+            default: object = Default.sentinel
             ) -> Any:
         ...  # pragma: no cover
 
@@ -165,7 +172,8 @@ class Inject(Singleton):
                 Source[Any],
                 Callable[..., Any],
                 Type[CallableClass[Any]]
-            ]] = None
+            ]] = None,
+            default: object = Default.sentinel
             ) -> Any:
         """
         Injection Marker specifying explicitly which dependency to retrieve.
@@ -183,7 +191,9 @@ class Inject(Singleton):
             <MyService object at ...>
 
         """
-        return Get(__dependency, source=source) if source is not None else Get(__dependency)
+        if source is not None:
+            return Get(__dependency, source=source, default=default)
+        return Get(__dependency, default=default)
 
     @overload
     def __call__(self,
@@ -421,6 +431,6 @@ def validate_injection(dependencies: DEPENDENCIES_TYPE = None,
     # If we can iterate over it safely
     if isinstance(auto_provide, (list, set, tuple, frozenset)):
         for cls in auto_provide:
-            if not (isinstance(cls, type) and inspect.isclass(cls)):
+            if not isinstance(cls, type):
                 raise TypeError(f"auto_provide must be a boolean or an iterable of "
                                 f"classes, but contains {cls!r} which is not a class.")

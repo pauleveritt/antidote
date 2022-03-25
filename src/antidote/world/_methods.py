@@ -1,6 +1,6 @@
 import inspect
 import warnings
-from typing import Any, cast, Hashable, Type, TypeVar
+from typing import Any, cast, Type, TypeVar
 
 from .._internal import API
 from .._internal.state import current_container, init
@@ -131,7 +131,7 @@ def freeze() -> None:
 
 
 @API.public
-def debug(dependency: Hashable, *, depth: int = -1) -> str:
+def debug(dependency: object, *, depth: int = -1) -> str:
     """
     To help you debug issues you may encounter with your injections, this will provide
     a tree representing all the dependencies that will be retrieved by Antidote when

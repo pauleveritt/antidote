@@ -13,7 +13,6 @@ from ._providers import FactoryProvider
 from ._utils import validated_parameters
 from .core import inject, Scope, Wiring, WithWiringMixin
 from .core.exceptions import DoubleInjectionError
-from .core.injection import InjectedCallable
 from .utils import validated_scope
 
 T = TypeVar('T')
@@ -307,19 +306,19 @@ def factory(f: Optional[T] = None,
                          ) -> T:
         from .service import service
 
-        if callable(func) and (inspect.isfunction(func) or isinstance(func, InjectedCallable)):
-            output: object = get_type_hints(func).get('return')  # type: ignore
+        if callable(func) and inspect.isfunction(func):
+            output: object = get_type_hints(func).get('return')
 
             if output is None:
                 raise ValueError("A return type hint is necessary. "
                                  "It is used a the dependency.")
-            if not (isinstance(output, type) and inspect.isclass(output)):
+            if not isinstance(output, type):
                 raise TypeError(f"The return type hint is expected to be a class, "
                                 f"not {type(output)}.")
 
             if wiring is not None:
                 try:
-                    func = inject(func, dependencies=wiring.dependencies)  # type: ignore
+                    func = inject(func, dependencies=wiring.dependencies)
                 except DoubleInjectionError:
                     pass
 
@@ -328,12 +327,12 @@ def factory(f: Optional[T] = None,
             factory_provider.register(factory=cast(Callable[..., object], func),
                                       scope=scope,
                                       output=output)
-        elif isinstance(func, type) and inspect.isclass(func):
+        elif isinstance(func, type):
             output = get_type_hints(func.__call__).get('return')
             if output is None:
                 raise ValueError("A return type hint is necessary. "
                                  "It is used a the dependency.")
-            if not (isinstance(output, type) and inspect.isclass(output)):
+            if not isinstance(output, type):
                 raise TypeError(f"The return type hint is expected to be a class, "
                                 f"not {type(output)}.")
 
