@@ -15,12 +15,12 @@ service by hand, you're *asking* for it. Instead of:
 
     from typing import Any
 
-    class Database:
+    class Greeter:
         def query(self, sql: str) -> Any:
             pass
 
     def get_total_count() -> int:
-        db = Database()
+        db = Greeter()
         return db.query("SELECT COUNT(*) FROM my_table")
 
     get_total_count()
@@ -29,24 +29,24 @@ You do:
 
 .. testcode:: why_dependency_injection
 
-    def get_total_count(db: Database) -> int:
+    def get_total_count(db: Greeter) -> int:
         return db.query("SELECT COUNT(*) FROM my_table")
 
-    get_total_count(Database())
+    get_total_count(Greeter())
 
-Here :code:`get_total_count()` doesn't rely directly on the class :code:`Database` anymore. It only expects
+Here :code:`get_total_count()` doesn't rely directly on the class :code:`Greeter` anymore. It only expects
 to be given an object that exposes the same interface, a method :code:`query(sql: str) -> Any`.
-This leads to more **modular code** as there less coupling between :code:`get_total_count()` and :code:`Database`.
-In the later you can change how :code:`Database` is instantiated without changing :code:`get_total_count()`. It
+This leads to more **modular code** as there less coupling between :code:`get_total_count()` and :code:`Greeter`.
+In the later you can change how :code:`Greeter` is instantiated without changing :code:`get_total_count()`. It
 also leads to **easier testing**, you only need to provide an object that behaves the same way, no need
-to know how :code:`Database` actually works.
+to know how :code:`Greeter` actually works.
 
-Now in simple projects, you would just have an instance of :code:`Database` in a module and give it to the functions that needs it.
+Now in simple projects, you would just have an instance of :code:`Greeter` in a module and give it to the functions that needs it.
 
 .. testcode:: why_dependency_injection
 
     # services.py
-    db = Database()
+    db = Greeter()
 
 .. code-block:: python
 
@@ -63,12 +63,12 @@ and where it should be injected:
     from antidote import service, inject
 
     @service
-    class Database:
+    class Greeter:
         def query(self, sql: str) -> Any:
             pass
 
     @inject
-    def get_total_count(db: Database = inject.me()) -> int:
+    def get_total_count(db: Greeter = inject.me()) -> int:
         return db.query("SELECT COUNT(*) FROM my_table")
 
     get_total_count()
@@ -87,15 +87,15 @@ so you want to avoid it if possible. A simple way to do
     # services.py
     from typing import Optional
 
-    __db: Optional[Database] = None
+    __db: Optional[Greeter] = None
 
-    def get_db() -> Database:
+    def get_db() -> Greeter:
         global __db
         if __db is None:
-            __db = Database()
+            __db = Greeter()
         return __db
 
-That's still fine to maintain. But how does :code:`Database` know where the database is ? This needs configuration:
+That's still fine to maintain. But how does :code:`Greeter` know where the database is ? This needs configuration:
 
 .. testcode:: why_dependency_injection
 
@@ -108,23 +108,23 @@ That's still fine to maintain. But how does :code:`Database` know where the data
 .. testcode:: why_dependency_injection
 
     # services.py
-    __db: Optional[Database] = None
+    __db: Optional[Greeter] = None
 
     config = Config()
 
-    def get_db(host: str, port: int) -> Database:
+    def get_db(host: str, port: int) -> Greeter:
         global __db
         if __db is None:
-            __db = Database(host, port)
+            __db = Greeter(host, port)
         return __db
 
 Now it starts to get complicated. How should the :code:`config` be handled ? With the above you need to have access
-the :code:`config` to be able to retrieve the :code:`Database` because :code:`host` and :code:`port` must be specified. So you have a global
+the :code:`config` to be able to retrieve the :code:`Greeter` because :code:`host` and :code:`port` must be specified. So you have a global
 object that you carry everywhere. You could use :code:`config` inside the :code:`get_db()` but that breaks dependency
 injection. Is it that bad ? Well, it can quickly become cumbersome in tests, you have to manage a global state used by your
 code. Starts to get really ugly, but manageable.
 
-But what if the configuration isn't coming from a file but it's stored in the Database / on a remote server ? This starts
+But what if the configuration isn't coming from a file but it's stored in the Greeter / on a remote server ? This starts
 to get really complex. Now imagine if you have tens of services: templating engine, database, AWS s3 storage,
 other micro-services with which you communicate, APIs of clients/data sources etc..
 
@@ -143,7 +143,7 @@ to do all that wiring properly. Here is the same example with Antidote:
         DB_PORT = const(5432)
 
     @service
-    class Database:
+    class Greeter:
         def __init__(self,
                      host: str = Config.DB_HOST,
                      port: int = Config.DB_PORT):
@@ -153,7 +153,7 @@ to do all that wiring properly. Here is the same example with Antidote:
             pass
 
     @inject
-    def get_total_count(db: Database = inject.me()) -> int:
+    def get_total_count(db: Greeter = inject.me()) -> int:
         return db.query("SELECT COUNT(*) FROM my_table")
 
     get_total_count()

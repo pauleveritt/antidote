@@ -22,6 +22,7 @@ ignore = ["src/antidote/_internal/scm_version.py"]
 ##########
 [tool.pytest.ini_options]
 markers = ["compiled_only"]
+testpaths = ["tests", "examples"]
 
 
 ############
@@ -71,7 +72,7 @@ typeCheckingMode = "strict"
 # Python code is doing a lot of isinstance to actually verify typing
 reportUnnecessaryIsInstance = false
 # Doesn't work well with metaclasses
-# FIXME: to be removed ones no metaclasses are used ??
+# FIXME: to be removed ones no metaclasses are use  d ??
 reportSelfClsParameterName = false
 # Yes we have cycles, it's not great but if tests are passing it means it works.
 reportImportCycles = false

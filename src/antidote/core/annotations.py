@@ -44,13 +44,13 @@ Annotation specifying that the type hint itself is the dependency:
     >>> from typing import Annotated
     ... # from typing_extensions import Annotated # Python < 3.9
     >>> @service
-    ... class Database:
+    ... class Greeter:
     ...     pass
     >>> @inject
-    ... def load_db(db: Inject[Database]):
+    ... def load_db(db: Inject[Greeter]):
     ...     return db
     >>> load_db()
-    <Database ...>
+    <Greeter ...>
 
 """
 
@@ -150,14 +150,14 @@ class From(FinalImmutable, AntidoteAnnotation):
 
         >>> from typing import Annotated
         >>> from antidote import factory, world, inject, From
-        >>> class Database:
+        >>> class Greeter:
         ...     def __init__(self, host: str):
         ...         self.host = host
         >>> @factory
-        ... def build_db(host: str = 'localhost:5432') -> Database:
-        ...     return Database(host=host)
+        ... def build_db(host: str = 'localhost:5432') -> Greeter:
+        ...     return Greeter(host=host)
         >>> @inject
-        ... def f(db: Annotated[Database, From(build_db)]) -> Database:
+        ... def f(db: Annotated[Greeter, From(build_db)]) -> Greeter:
         ...     return db
         >>> f().host
         'localhost:5432'

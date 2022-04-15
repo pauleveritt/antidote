@@ -117,20 +117,20 @@ Injection
     from antidote import inject, service
 
     @service
-    class Database:
+    class Greeter:
         pass
 
     @inject
-    def f(db: Database = inject.me()):
+    def f(db: Greeter = inject.me()):
         return db
 
-    assert isinstance(f(), Database)  # works !
+    assert isinstance(f(), Greeter)  # works !
 
 Simple, right ? And you can still use it like a normal function, typically when testing it:
 
 .. code-block:: python
 
-    f(Database())
+    f(Greeter())
 
 :code:`.inject` here used the marker :code:`inject.me()` with the help of the type hint to determine
 the dependency. But it also supports the following ways to express the dependency wiring:
@@ -141,20 +141,20 @@ the dependency. But it also supports the following ways to express the dependenc
         from antidote import Inject
 
         @inject
-        def f(db: Inject[Database]):
+        def f(db: Inject[Greeter]):
             pass
 
 - list (matching argument position):
     .. code-block:: python
 
-        @inject([Database])
+        @inject([Greeter])
         def f(db):
             pass
 
 - dictionary:
     .. code-block:: python
 
-        @inject({'db': Database})
+        @inject({'db': Greeter})
         def f(db):
             pass
 
@@ -181,8 +181,8 @@ You can also retrieve the dependency by hand with :code:`world.get`:
     from antidote import world
 
     # Retrieve dependencies by hand, in tests typically
-    world.get(Database)
-    world.get[Database](Database)  # with type hint, enforced when possible
+    world.get(Greeter)
+    world.get[Greeter](Greeter)  # with type hint, enforced when possible
 
 
 Service
@@ -199,7 +199,7 @@ hints and markers such as :code:`inject.me()`:
     @service(singleton=False)
     class QueryBuilder:
         # methods are also injected by default
-        def __init__(self, db: Database = inject.me()):
+        def __init__(self, db: Greeter = inject.me()):
             self._db = db
 
     @inject
@@ -272,7 +272,7 @@ Factories are used by Antidote to generate a dependency, typically a class from 
         pass
 
     @factory(singleton=False)  # function is injected by default
-    def current_user(db: Database = inject.me()) -> User:
+    def current_user(db: Greeter = inject.me()) -> User:
         return User()
 
     # Consistency between the type hint and the factory result type hint is enforced.
@@ -353,15 +353,15 @@ Testing and Debugging
     from antidote import service, inject
 
     @service
-    class Database:
+    class Greeter:
         pass
 
     @inject
-    def f(db: Database = inject.me()):
+    def f(db: Greeter = inject.me()):
         pass
 
     f()
-    f(Database())  # test with specific arguments in unit tests
+    f(Greeter())  # test with specific arguments in unit tests
 
 You can also fully isolate your tests from each other and override any dependency within
 that context:
@@ -373,18 +373,18 @@ that context:
     # Clone current world to isolate it from the rest
     with world.test.clone():
         x = object()
-        # Override the Database
-        world.test.override.singleton(Database, x)
-        f()  # will have `x` injected for the Database
+        # Override the Greeter
+        world.test.override.singleton(Greeter, x)
+        f()  # will have `x` injected for the Greeter
 
-        @world.test.override.factory(Database)
+        @world.test.override.factory(Greeter)
         def override_database():
             class DatabaseMock:
                 pass
 
             return DatabaseMock()
 
-        f()  # will have `DatabaseMock()` injected for the Database
+        f()  # will have `DatabaseMock()` injected for the Greeter
 
 If you ever need to debug your dependency injections, Antidote also provides a tool to
 have a quick summary of what is actually going on:

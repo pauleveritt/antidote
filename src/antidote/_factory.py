@@ -70,26 +70,26 @@ class FactoryMeta(AbstractMeta):
         .. doctest:: service_meta
 
             >>> from antidote import Factory, world
-            >>> class Database:
+            >>> class Greeter:
             ...     def __init__(self, host: str):
             ...         self.host = host
             >>> class DatabaseFactory(Factory):
             ...     __antidote__ = Factory.Conf(parameters=['host'])
             ...
-            ...     def __call__(self, host: str) -> Database:
-            ...         return Database(host)
+            ...     def __call__(self, host: str) -> Greeter:
+            ...         return Greeter(host)
             ...
             ...     @classmethod
             ...     def with_host(cls, host: str) -> object:
             ...         return cls.parameterized(host=host)
-            >>> db = world.get(Database @ DatabaseFactory.with_host(host='remote'))
+            >>> db = world.get(Greeter @ DatabaseFactory.with_host(host='remote'))
             >>> # or with Mypy type hint
-            ... db = world.get[Database] @ DatabaseFactory.with_host(host='remote')
+            ... db = world.get[Greeter] @ DatabaseFactory.with_host(host='remote')
             >>> db.host
             'remote'
             >>> # As DatabaseFactory is defined to return a singleton,
             ... # the same is applied:
-            ... world.get(Database @ DatabaseFactory.with_host(host='remote')) is db
+            ... world.get(Greeter @ DatabaseFactory.with_host(host='remote')) is db
             True
 
         Args:

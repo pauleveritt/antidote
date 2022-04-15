@@ -30,12 +30,12 @@ class Factory(metaclass=FactoryMeta, abstract=True):
     .. doctest:: factory_class
 
         >>> from antidote import Factory
-        >>> class Database:
+        >>> class Greeter:
         ...     pass
         ...
         >>> class DatabaseLoader(Factory):
-        ...     def __call__(self) -> Database:
-        ...         return Database()
+        ...     def __call__(self) -> Greeter:
+        ...         return Greeter()
 
     To retrieve the dependency from Antidote you need to use a specific syntax
     :code:`dependency @ factory` as presented in the following examples. The goal of it is
@@ -47,16 +47,16 @@ class Factory(metaclass=FactoryMeta, abstract=True):
     .. doctest:: factory_class
 
         >>> from antidote import world, inject
-        >>> world.get(Database @ DatabaseLoader)  # treated as `object` by Mypy
-        <Database ...>
+        >>> world.get(Greeter @ DatabaseLoader)  # treated as `object` by Mypy
+        <Greeter ...>
         >>> # With Mypy casting
-        ... world.get[Database](Database @ DatabaseLoader)
-        <Database ...>
+        ... world.get[Greeter](Greeter @ DatabaseLoader)
+        <Greeter ...>
         >>> # Concise Mypy casting
-        ... world.get[Database] @ DatabaseLoader
-        <Database ...>
-        >>> @inject([Database @ DatabaseLoader])
-        ... def f(db: Database):
+        ... world.get[Greeter] @ DatabaseLoader
+        <Greeter ...>
+        >>> @inject([Greeter @ DatabaseLoader])
+        ... def f(db: Greeter):
         ...     pass
 
     Or with annotated type hints:
@@ -67,7 +67,7 @@ class Factory(metaclass=FactoryMeta, abstract=True):
         ... # from typing_extensions import Annotated # Python < 3.9
         >>> from antidote import From
         >>> @inject
-        ... def f(db: Annotated[Database, From(DatabaseLoader)]):
+        ... def f(db: Annotated[Greeter, From(DatabaseLoader)]):
         ...     pass
 
     .. note::
@@ -81,7 +81,7 @@ class Factory(metaclass=FactoryMeta, abstract=True):
     .. doctest:: factory_class
 
         >>> # Singleton by default
-        ... world.get[Database] @ DatabaseLoader is world.get[Database] @ DatabaseLoader
+        ... world.get[Greeter] @ DatabaseLoader is world.get[Greeter] @ DatabaseLoader
         True
         >>> class Session:
         ...     pass
@@ -90,7 +90,7 @@ class Factory(metaclass=FactoryMeta, abstract=True):
         ... class SessionFactory(Factory):
         ...     __antidote__ = Factory.Conf(singleton=False)
         ...
-        ...     def __init__(self, db: Annotated[Database, From(DatabaseLoader)]):
+        ...     def __init__(self, db: Annotated[Greeter, From(DatabaseLoader)]):
         ...         self.db = db
         ...
         ...     def __call__(self) -> Session:
@@ -104,25 +104,25 @@ class Factory(metaclass=FactoryMeta, abstract=True):
 
     .. doctest:: factory_class
 
-        >>> class Database:
+        >>> class Greeter:
         ...     def __init__(self, host: str):
         ...         self.host = host
         ...
         >>> class DatabaseFactory(Factory):
         ...     __antidote__ = Factory.Conf(parameters=['host'])
         ...
-        ...     def __call__(self, host: str) -> Database:
-        ...         return Database(host)
+        ...     def __call__(self, host: str) -> Greeter:
+        ...         return Greeter(host)
         ...
         ...     @classmethod
         ...     def hosted(cls, host: str) -> object:
         ...          return cls.parameterized(host=host)
         ...
-        >>> test_db = world.get[Database] @ DatabaseFactory.hosted('test')
+        >>> test_db = world.get[Greeter] @ DatabaseFactory.hosted('test')
         >>> test_db.host
         'test'
         >>> # The factory returns a singleton so our test_session will also be one
-        ... world.get[Database] @ DatabaseFactory.hosted('test') is test_db
+        ... world.get[Greeter] @ DatabaseFactory.hosted('test') is test_db
         True
 
     """
@@ -237,11 +237,11 @@ def factory(f: Optional[T] = None,
     .. doctest:: factory
 
         >>> from antidote import factory
-        >>> class Database:
+        >>> class Greeter:
         ...     pass
         >>> @factory
-        ... def load_db() -> Database:
-        ...     return Database()
+        ... def load_db() -> Greeter:
+        ...     return Greeter()
 
     Now to retrieve the dependency:
 
@@ -249,9 +249,9 @@ def factory(f: Optional[T] = None,
 
         >>> from antidote import inject, world
         >>> @inject
-        ... def f(db: Database = inject.me(source=load_db)) -> Database:
+        ... def f(db: Greeter = inject.me(source=load_db)) -> Greeter:
         ...     return db
-        >>> f() is world.get(Database, source=load_db)
+        >>> f() is world.get(Greeter, source=load_db)
         True
 
     :py:func:`.inject` supports two other alternatives:
@@ -261,10 +261,10 @@ def factory(f: Optional[T] = None,
         >>> from typing import Annotated
         >>> from antidote import From, Get
         >>> @inject
-        ... def f(db: Annotated[Database, From(load_db)]) -> Database:
+        ... def f(db: Annotated[Greeter, From(load_db)]) -> Greeter:
         ...     return db
-        >>> @inject({'db': Get(Database, source=load_db)})
-        ... def f(db: Database) -> Database:
+        >>> @inject({'db': Get(Greeter, source=load_db)})
+        ... def f(db: Greeter) -> Greeter:
         ...     return db
 
     It's also possible to have a stateful factory using a class. The class will be instantiated
@@ -274,8 +274,8 @@ def factory(f: Optional[T] = None,
 
         >>> @factory
         ... class DatabaseFactory:
-        ...     def __call__(self) -> Database:
-        ...         return Database()
+        ...     def __call__(self) -> Greeter:
+        ...         return Greeter()
 
 
     Args:

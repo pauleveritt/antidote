@@ -156,7 +156,7 @@ def is_unbound_method(func: Union[Callable[..., object], staticmethod[Any], clas
     >>> class A:
     ...     def f(self):
     ...         pass
-    >>> A.f.__qualname__
+    >>> A.greeting.__qualname__
     'A.f'
 
     This helps us differentiate method defined in a module and those for a class.

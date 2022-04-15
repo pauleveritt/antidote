@@ -20,23 +20,23 @@ Let's start with the basics and define a simple class that can be injected, an :
     from antidote import inject, service
 
     @service
-    class Database:
+    class Greeter:
         ...
 
     @inject
-    def load_database(db: Database = inject.me()) -> Database:
+    def load_database(db: Greeter = inject.me()) -> Greeter:
         # doing stuff
         return db
 
-Now you don't need to provide :code:`Database` to :code:`do_stuff()` anymore!
+Now you don't need to provide :code:`Greeter` to :code:`do_stuff()` anymore!
 
 .. doctest:: tutorial_overview
 
     >>> load_database()
-    <Database object at ...>
+    <Greeter object at ...>
 
 By default :py:func:`.service` declares singletons, meaning there's only one instance of
-:code:`Database`:
+:code:`Greeter`:
 
 .. doctest:: tutorial_overview
 
@@ -47,8 +47,8 @@ You can override the injected dependency explicitly, which is particularly usefu
 
 .. doctest:: tutorial_overview
 
-    >>> load_database(Database())
-    <Database object at ...>
+    >>> load_database(Greeter())
+    <Greeter object at ...>
 
 .. note::
 
@@ -59,8 +59,8 @@ Lastly but not the least, :py:obj:`.world.get` can also retrieve dependencies:
 .. doctest:: tutorial_overview
 
     >>> from antidote import world
-    >>> world.get(Database)
-    <Database object at ...>
+    >>> world.get(Greeter)
+    <Greeter object at ...>
 
 Mypy will usually be able to correctly infer the typing. But, if you find yourself in a corner case,
 you can use the alternative syntax to provide type information:
@@ -68,8 +68,8 @@ you can use the alternative syntax to provide type information:
 .. doctest:: tutorial_overview
 
     >>> # Specifying the return type explicitly
-    ... world.get[Database](Database)
-    <Database object at ...>
+    ... world.get[Greeter](Greeter)
+    <Greeter object at ...>
 
 Antidote will enforce the type when possible, if the provided type information is really a type.
 
@@ -80,11 +80,11 @@ Antidote will enforce the type when possible, if the provided type information i
     .. testcode:: tutorial_overview
 
         @inject
-        def good(db: Database = inject.me()):
+        def good(db: Greeter = inject.me()):
             return db
 
         def bad():
-            db = world.get(Database)
+            db = world.get(Greeter)
             return db
 
     .. testcleanup:: tutorial_overview
@@ -126,7 +126,7 @@ ways to define the dependencies to be injected. Most of them will be used in thi
     from antidote import inject, service
 
     @service
-    class Database:
+    class Greeter:
         ...
 
     @service
@@ -139,11 +139,11 @@ ways to define the dependencies to be injected. Most of them will be used in thi
     .. testcode:: tutorial_injection
 
         @inject
-        def f(db: Database = inject.me()):
+        def f(db: Greeter = inject.me()):
             ...
 
         @inject
-        def f2(db = inject.get(Database)):
+        def f2(db = inject.get(Greeter)):
             ...
 
     .. testcleanup:: tutorial_injection
@@ -158,7 +158,7 @@ ways to define the dependencies to be injected. Most of them will be used in thi
         from antidote import Inject
 
         @inject
-        def f(db: Inject[Database]):
+        def f(db: Inject[Greeter]):
             ...
 
     .. testcleanup:: tutorial_injection
@@ -170,22 +170,22 @@ ways to define the dependencies to be injected. Most of them will be used in thi
 
     .. testcode:: tutorial_injection
 
-        @inject(dependencies=dict(db=Database, cache=Cache))
-        def f(db: Database, cache: Cache):
+        @inject(dependencies=dict(db=Greeter, cache=Cache))
+        def f(db: Greeter, cache: Cache):
             ...
 
         # To ignore one argument use `None` as a placeholder.
-        @inject(dependencies=[Database, Cache])
-        def f2(db: Database, cache: Cache):
+        @inject(dependencies=[Greeter, Cache])
+        def f2(db: Greeter, cache: Cache):
             ...
 
         # Or more concisely
-        @inject({'db': Database, 'cache': Cache})
-        def f3(db: Database, cache: Cache):
+        @inject({'db': Greeter, 'cache': Cache})
+        def f3(db: Greeter, cache: Cache):
             ...
 
-        @inject([Database, Cache])
-        def f4(db: Database, cache: Cache):
+        @inject([Greeter, Cache])
+        def f4(db: Greeter, cache: Cache):
             ...
 
     .. testcleanup:: tutorial_injection
@@ -222,7 +222,7 @@ A service is class that can be provided by Antidote, it's declared with :py:func
     from antidote import service
 
     @service
-    class Database:
+    class Greeter:
         ...
 
 By default it's a singleton, so only one instance will exist. This behavior can be controlled with:
@@ -230,7 +230,7 @@ By default it's a singleton, so only one instance will exist. This behavior can 
 .. testcode:: tutorial_services
 
     @service(singleton=False)
-    class Database:
+    class Greeter:
         ...
 
 On top of declaring the dependency, :py:func:`.service` also wires the class and so injects all
@@ -242,14 +242,14 @@ methods by default:
 
     @service
     class AuthenticationService:
-        def __init__(self, db: Database = inject.me()):
+        def __init__(self, db: Greeter = inject.me()):
             self.db = db
 
 .. doctest:: tutorial_services
 
     >>> from antidote import world
     >>> world.get(AuthenticationService).db
-    <Database object at ...>
+    <Greeter object at ...>
 
 You can customize injection by applying a custom :py:func:`.inject` on methods or by specifying your
 own :py:class:`.Wiring`.
@@ -267,12 +267,12 @@ own :py:class:`.Wiring`.
         @inject(ignore_type_hints=True)
         def __init__(self,
                      original: Optional[AuthenticationService] = None,
-                     db: Database = inject.get(Database)):
+                     db: Greeter = inject.get(Greeter)):
             self.db = db
 
     @service(wiring=Wiring(methods=['__init__']))
     class AuthenticationService:
-        def __init__(db: Database = inject.me()):
+        def __init__(db: Greeter = inject.me()):
             self.db = db
 
 .. note::
@@ -443,26 +443,26 @@ decorator :py:func:`~.factory.factory`:
 
 .. testsetup:: tutorial_factory
 
-    class Database:
+    class Greeter:
         def __init__(self, *args, **kwargs) -> None:
             pass
 
 .. testcode:: tutorial_factory
 
     from antidote import factory, inject, Constants, const
-    # from my_favorite_library import Database
+    # from my_favorite_library import Greeter
 
     class Config(Constants):
         URL = const[str]('localhost:5432')
 
 
     @factory
-    def default_db(url: str = Config.URL) -> Database:  # @factory applies @inject automatically
-        return Database(url)
+    def default_db(url: str = Config.URL) -> Greeter:  # @factory applies @inject automatically
+        return Greeter(url)
 
 
     @inject
-    def f(db: Database = inject.me(source=default_db)) -> Database:
+    def f(db: Greeter = inject.me(source=default_db)) -> Greeter:
         return db
 
 
@@ -470,9 +470,9 @@ decorator :py:func:`~.factory.factory`:
 
     >>> from antidote import world
     >>> f()
-    <Database ...>
-    >>> world.get(Database, source=default_db)
-    <Database ...>
+    <Greeter ...>
+    >>> world.get(Greeter, source=default_db)
+    <Greeter ...>
 
 :py:func:`~.factory.factory` will automatically use :py:func:`.inject` which lets us use markers
 and annotation for dependency injection of the factory itself. You can still apply
@@ -481,9 +481,9 @@ and annotation for dependency injection of the factory itself. You can still app
 You probably noticed how Antidote forces you to specify the factory when using it for dependency
 injection! There are two reasons for it:
 
-- You can trace back how :code:`Database` is instantiated.
+- You can trace back how :code:`Greeter` is instantiated.
 - The factory :code:`default_db` will always be loaded by Python before using
-  :code:`Database`.
+  :code:`Greeter`.
 
 Antidote will enforce that the specified factory and class are consistent, relying on the return
 type of the factory:
@@ -506,9 +506,9 @@ For more complex factories, you can use a class factory:
         def __init__(self, url: str = Config.URL):
             self.url = url
 
-        # Will be called to instantiate Database
-        def __call__(self) -> Database:
-            return Database(self.url)
+        # Will be called to instantiate Greeter
+        def __call__(self) -> Greeter:
+            return Greeter(self.url)
 
 
 7. Tests

@@ -21,15 +21,15 @@ as a service or one that can be provided by a factory.
 
     from antidote import implementation, service, inject, Constants, const
 
-    class Database:
+    class Greeter:
         pass
 
     @service
-    class PostgresDB(Database):
+    class PostgresDB(Greeter):
         pass
 
     @service
-    class MySQLDB(Database):
+    class MySQLDB(Greeter):
         pass
 
     class Conf(Constants):
@@ -37,7 +37,7 @@ as a service or one that can be provided by a factory.
 
     # permanent is True by default. If you want to choose on each call which implementation
     # should be used, set it to False.
-    @implementation(Database, permanent=True)
+    @implementation(Greeter, permanent=True)
     def local_db(db_conn_str: str = Conf.DB_CONN_STR) -> object:
         db, *rest = db_conn_str.split(':')
         if db == 'postgres':
@@ -55,12 +55,12 @@ Similar to a :py:func:`~.factory.factory` you must specify the source of the dep
 .. doctest:: recipes_interface_implementation
 
     >>> @inject
-    ... def f(db: Database = inject.me(source=local_db)):
+    ... def f(db: Greeter = inject.me(source=local_db)):
     ...     return db
     >>> f()
     <PostgresDB ...>
     >>> from antidote import world
-    >>> world.get(Database, source=local_db)
+    >>> world.get(Greeter, source=local_db)
     <PostgresDB ...>
 
 

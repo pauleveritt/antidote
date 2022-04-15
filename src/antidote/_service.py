@@ -47,7 +47,7 @@ class ServiceMeta(AbstractMeta):
         .. doctest:: service_meta
 
             >>> from antidote import Service, world
-            >>> class Database(Service):
+            >>> class Greeter(Service):
             ...     __antidote__ = Service.Conf(parameters=['host'])
             ...
             ...     def __init__(self, host: str):
@@ -56,11 +56,11 @@ class ServiceMeta(AbstractMeta):
             ...     @classmethod
             ...     def with_host(cls, host: str) -> object:
             ...         return cls.parameterized(host=host)
-            >>> db = world.get(Database.with_host(host='remote'))
+            >>> db = world.get(Greeter.with_host(host='remote'))
             >>> db.host
             'remote'
-            >>> # As Database is defined as a singleton, the same is applied:
-            ... world.get(Database.with_host(host='remote')) is db
+            >>> # As Greeter is defined as a singleton, the same is applied:
+            ... world.get(Greeter.with_host(host='remote')) is db
             True
 
         Args:

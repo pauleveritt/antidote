@@ -17,17 +17,17 @@ existing dependency:
         from antidote import service, inject, Inject
 
         @service
-        class Database:
+        class Greeter:
             pass
 
         @inject
-        def f(db: Inject[Database]) -> Database:
+        def f(db: Inject[Greeter]) -> Greeter:
             return db
 
     .. doctest:: how_to_annotated_type_hints
 
         >>> f()
-        <Database ...>
+        <Greeter ...>
 
 - A :py:func:`~.factory.factory` and :py:func:`.implementation` can be
   retrieved with :py:class:`.From` or :py:class:`.Get`:
@@ -38,27 +38,27 @@ existing dependency:
         from typing import Annotated
         # from typing_extensions import Annotated # Python < 3.9
 
-        class Database:
+        class Greeter:
             pass
 
         @factory
-        def current_db() -> Database:
-            return Database()
+        def current_db() -> Greeter:
+            return Greeter()
 
         @inject
-        def f(db: Annotated[Database, From(current_db)]) -> Database:
+        def f(db: Annotated[Greeter, From(current_db)]) -> Greeter:
             return db
 
         @inject
-        def g(db: Annotated[Database, Get(Database, source=current_db)]) -> Database:
+        def g(db: Annotated[Greeter, Get(Greeter, source=current_db)]) -> Greeter:
             return db
 
     .. doctest:: how_to_annotated_type_hints
 
         >>> f()
-        <Database ...>
+        <Greeter ...>
         >>> g()
-        <Database ...>
+        <Greeter ...>
 
 - A constant from :py:class:`.Constants` can be retrieved with :py:class:`.Get`. Actually
   any dependency can be retrieved with it:
@@ -91,12 +91,12 @@ with the arguments :code:`dependencies` of :py:func:`.inject`.
 
     .. doctest:: how_to_annotated_type_hints
 
-        >>> CurrentDatabase = Annotated[Database, From(current_db)]
+        >>> CurrentDatabase = Annotated[Greeter, From(current_db)]
         >>> @inject
-        ... def f(db: CurrentDatabase) -> Database:
+        ... def f(db: CurrentDatabase) -> Greeter:
         ...     return db
         >>> f()
-        <Database ...>
+        <Greeter ...>
 
 
 
@@ -112,17 +112,17 @@ arguments:
     from antidote import inject, service
 
     @service
-    class Database:
+    class Greeter:
         pass
 
     @inject
-    def f(db: Database = inject.me()) -> Database:
+    def f(db: Greeter = inject.me()) -> Greeter:
         return db
 
 .. doctest:: how_to_test
 
     >>> f()
-    <Database ...>
+    <Greeter ...>
     >>> class TestDatabase:
     ...     pass
     >>> f(TestDatabase())
@@ -135,9 +135,9 @@ any existing dependency, but their value will be different.
 .. doctest:: how_to_test
 
     >>> from antidote import world
-    >>> real_db = world.get[Database]()
+    >>> real_db = world.get[Greeter]()
     >>> with world.test.clone():
-    ...     world.get[Database]() is real_db
+    ...     world.get[Greeter]() is real_db
     False
 
 You can also override them easily with:
@@ -147,8 +147,8 @@ You can also override them easily with:
     .. doctest:: how_to_test
 
         >>> with world.test.clone():
-        ...     world.test.override.singleton(Database, "fake database")
-        ...     world.get(Database)
+        ...     world.test.override.singleton(Greeter, "fake database")
+        ...     world.get(Greeter)
         'fake database'
 
 - :py:func:`.world.test.override.factory`
@@ -157,14 +157,14 @@ You can also override them easily with:
 
         >>> with world.test.clone():
         ...     @world.test.override.factory()
-        ...     def local_db() -> Database:
+        ...     def local_db() -> Greeter:
         ...         return "fake database"
         ...     # Or
-        ...     @world.test.override.factory(Database)
+        ...     @world.test.override.factory(Greeter)
         ...     def local_db():
         ...         return "fake database"
         ...
-        ...     world.get(Database)
+        ...     world.get(Greeter)
         'fake database'
 
 You can override as many times as you want:
@@ -172,13 +172,13 @@ You can override as many times as you want:
 .. doctest:: how_to_test
 
     >>> with world.test.clone():
-    ...     world.test.override.singleton(Database, "fake database 1 ")
-    ...     @world.test.override.factory(Database)
+    ...     world.test.override.singleton(Greeter, "fake database 1 ")
+    ...     @world.test.override.factory(Greeter)
     ...     def local_db():
     ...         return "fake database 2"
     ...
-    ...     world.test.override.singleton(Database, "fake database 3")
-    ...     world.get(Database)
+    ...     world.test.override.singleton(Greeter, "fake database 3")
+    ...     world.get(Greeter)
     'fake database 3'
 
 .. note::

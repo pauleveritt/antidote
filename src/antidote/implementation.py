@@ -50,22 +50,22 @@ def implementation(interface: type,
         >>> class Config(Constants):
         ...     DB = const('postgres')
         >>> # The interface
-        ... class Database:
+        ... class Greeter:
         ...     pass
 
     .. doctest:: implementation
 
         >>> from antidote import Service, factory
-        >>> class PostgreSQL(Database, Service):
+        >>> class PostgreSQL(Greeter, Service):
         ...     pass
-        >>> class MySQL(Database):
+        >>> class MySQL(Greeter):
         ...     pass
         >>> @factory
         ... def build_mysql() -> MySQL:
         ...     return MySQL()
 
     The decorated function must return the dependency that should be used for
-    :code:`Database`. It'll be automatically injected, so you can use annotated type hints
+    :code:`Greeter`. It'll be automatically injected, so you can use annotated type hints
     on it. Furthermore, the chosen implementation is by default permanent. Meaning that
     the decorated function will only be called once, at most.
 
@@ -74,7 +74,7 @@ def implementation(interface: type,
         >>> from antidote import implementation, Get
         >>> from typing import Annotated
         ... # from typing_extensions import Annotated # Python < 3.9
-        >>> @implementation(Database)
+        >>> @implementation(Greeter)
         ... def local_db(choice: Annotated[str, Get(Config.DB)]) -> object:
         ...     if choice == 'postgres':
         ...         return PostgreSQL
@@ -91,16 +91,16 @@ def implementation(interface: type,
     .. doctest:: implementation
 
         >>> from antidote import world, inject
-        >>> world.get(Database @ local_db)  # treated as `object` by Mypy
+        >>> world.get(Greeter @ local_db)  # treated as `object` by Mypy
         <PostgreSQL ...>
         >>> # With Mypy casting
-        ... world.get[Database](Database @ local_db)
+        ... world.get[Greeter](Greeter @ local_db)
         <PostgreSQL ...>
         >>> # Concise Mypy casting
-        ... world.get[Database] @ local_db
+        ... world.get[Greeter] @ local_db
         <PostgreSQL ...>
-        >>> @inject([Database @ local_db])
-        ... def f(db: Database):
+        >>> @inject([Greeter @ local_db])
+        ... def f(db: Greeter):
         ...     pass
 
     Or with annotated type hints:
@@ -111,7 +111,7 @@ def implementation(interface: type,
         ... # from typing_extensions import Annotated # Python < 3.9
         >>> from antidote import From
         >>> @inject
-        ... def f(db: Annotated[Database, From(local_db)]):
+        ... def f(db: Annotated[Greeter, From(local_db)]):
         ...     pass
 
     Args:

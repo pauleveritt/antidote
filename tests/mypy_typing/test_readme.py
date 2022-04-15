@@ -214,9 +214,9 @@ def test_debugging() -> None:
     # Clone current world to isolate it from the rest
     with world.test.clone():
         x = object()
-        # Override the Database
+        # Override the Greeter
         world.test.override.singleton(Database, x)
-        f()  # will have `x` injected for the Database
+        f()  # will have `x` injected for the Greeter
 
         @world.test.override.factory(Database)
         def override_database() -> object:
@@ -225,7 +225,7 @@ def test_debugging() -> None:
 
             return DatabaseMock()
 
-        f()  # will have `DatabaseMock()` injected for the Database
+        f()  # will have `DatabaseMock()` injected for the Greeter
 
 
 def test_readme() -> None:

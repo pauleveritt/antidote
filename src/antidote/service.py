@@ -34,20 +34,20 @@ class Service(metaclass=ServiceMeta, abstract=True):
     .. doctest:: service_class
 
         >>> from antidote import Service, world, inject
-        >>> class Database(Service):
+        >>> class Greeter(Service):
         ...     pass
 
     The service can then be retrieved by its class:
 
     .. doctest:: service_class
 
-        >>> world.get(Database)  # treated as `object` by Mypy
-        <Database ...>
+        >>> world.get(Greeter)  # treated as `object` by Mypy
+        <Greeter ...>
         >>> # With Mypy casting
-        ... world.get[Database]()
-        <Database ...>
-        >>> @inject([Database])
-        ... def f(db: Database):
+        ... world.get[Greeter]()
+        <Greeter ...>
+        >>> @inject([Greeter])
+        ... def f(db: Greeter):
         ...     pass
 
     Or with annotated type hints:
@@ -56,7 +56,7 @@ class Service(metaclass=ServiceMeta, abstract=True):
 
         >>> from antidote import Provide
         >>> @inject
-        ... def f(db: Provide[Database]):
+        ... def f(db: Provide[Greeter]):
         ...     pass
 
     All methods are injected by default and the service itself is a singleton.
@@ -65,12 +65,12 @@ class Service(metaclass=ServiceMeta, abstract=True):
     .. doctest:: service_class
 
         >>> # Singleton by default
-        ... world.get[Database]() is world.get[Database]()
+        ... world.get[Greeter]() is world.get[Greeter]()
         True
         >>> class Session(Service):
         ...     __antidote__ = Service.Conf(singleton=False)
         ...
-        ...     def __init__(self, db: Provide[Database]):
+        ...     def __init__(self, db: Provide[Greeter]):
         ...         self.db = db
         ...
         >>> world.get[Session]() is world.get[Session]()
@@ -81,7 +81,7 @@ class Service(metaclass=ServiceMeta, abstract=True):
 
     .. doctest:: service_class
 
-        >>> class Database(Service):
+        >>> class Greeter(Service):
         ...     __antidote__ = Service.Conf(parameters=['host'])
         ...
         ...     def __init__(self, host: str):
@@ -91,11 +91,11 @@ class Service(metaclass=ServiceMeta, abstract=True):
         ...     def hosted(cls, host: str) -> object:
         ...         return cls.parameterized(host=host)
         ...
-        >>> test_db = world.get[Database](Database.hosted('test'))
+        >>> test_db = world.get[Greeter](Greeter.hosted('test'))
         >>> test_db.host
         'test'
         >>> # The factory returns a singleton so our test_session will also be one
-        ... world.get[Database](Database.hosted('test')) is test_db
+        ... world.get[Greeter](Greeter.hosted('test')) is test_db
         True
 
     """

@@ -40,14 +40,14 @@ class Wiring(FinalImmutable):
 
         >>> from antidote import Wiring, Service, Provide
         >>> wiring = Wiring(methods=['my_method'])
-        >>> class Database(Service):
+        >>> class Greeter(Service):
         ...     pass
         >>> @wiring.wire
         ... class Dummy:
-        ...     def my_method(self, db: Provide[Database]) -> Database:
+        ...     def my_method(self, db: Provide[Greeter]) -> Greeter:
         ...         return db
         >>> Dummy().my_method()
-        <Database ...>
+        <Greeter ...>
 
 
     """
