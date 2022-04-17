@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import Optional, Any
 
-from antidote import QualifiedBy
+from antidote import QualifiedBy, inject, world
 from antidote.lib.interface import Predicate
 from antidote.lib.interface.interface import Weight, implements, interface
 
@@ -26,8 +26,9 @@ class Weight:
 
 
 @interface()
-class Alert:
-    name: str
+class Greeter:
+    """A way to talk about all variations of a ``Greeter``."""
+    salutation: str
 
 
 class NoOverrides:
@@ -37,6 +38,14 @@ class NoOverrides:
         return Weight(float('-inf'))
 
 
-@implements(Alert).when(NoOverrides())
-class DefaultAlert(Alert):
-    name = "The built-in alert"
+@implements(Greeter).when(NoOverrides())
+class DefaultAlert(Greeter):
+    """The bundled ``Greeter``."""
+    salutation: str = "The built-in alert"
+
+
+@inject
+def greeting() -> str:
+    """Get a ``Greeter`` and return a greeting."""
+    greeter: Greeter = world.get[Greeter].single()
+    return f"{greeter.salutation}!"

@@ -41,10 +41,5 @@ def optional_greeter(greeter: Optional[MissingGreeter] = inject.me()) -> str:
     return f'{greeter.salutation}!'
 
 
-def main() -> tuple[str, str, str]:
-    """Main entry point for this example."""
-    return (
-        annotation_greeting(),
-        list_greeting(),
-        dict_greeting(),
-    )
+def main():
+    return annotation_greeting(), list_greeting(), dict_greeting()

@@ -16,6 +16,7 @@ Table of Content
     :maxdepth: 2
 
     tutorial
+    examples/index
     faq
     recipes
     how_to

@@ -1,16 +1,14 @@
-"""Test this example."""
 from antidote import world
 from . import main, Greeter, MultiGreeter
 
 
-def test_main() -> None:
-    """Ensure the injected result matches what is expected."""
+def test_main():
     main_greeter = main()
     not_another_greeter = world.get(Greeter)
     assert main_greeter is not_another_greeter  # The same
 
 
-def test_not_singleton() -> None:
+def test_not_singleton():
     """``MultiGreeter`` is defined as not a singleton."""
     first: MultiGreeter = world.get(MultiGreeter)
     next: MultiGreeter = world.get(MultiGreeter)

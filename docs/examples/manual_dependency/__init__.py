@@ -1,6 +1,4 @@
-"""Get a dependency manually rather than via injection."""
-
-from antidote import inject, service, world
+from antidote import service, world
 
 
 @service
@@ -15,6 +13,5 @@ def greeting() -> str:
     return f'{greeter.salutation}!'
 
 
-def main() -> str:
-    """Main entry point for this example."""
+def main():
     return greeting()

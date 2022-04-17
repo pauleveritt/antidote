@@ -1,10 +1,9 @@
-"""Smallest example of injection."""
-
 from antidote import inject, service
 
 
 @service
 class Greeter:
+    """Someone that says hello to a customer."""
     salutation: str = "Hello"
 
 
@@ -14,6 +13,5 @@ def greeting(greeter: Greeter = inject.me()) -> str:
     return f'{greeter.salutation}!'
 
 
-def main() -> str:
-    """Main entry point for this example."""
+def main():
     return greeting()
