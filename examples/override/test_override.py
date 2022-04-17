@@ -4,4 +4,4 @@ from . import main
 
 def test_main() -> None:
     """Ensure the injected result matches what is expected."""
-    assert main() == "Hello, my name is Marie!"
+    assert main() == "The custom alert"

@@ -2,14 +2,15 @@
 
 import os
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, ClassVar
 
 from antidote import inject, service, Constants, const
 
 
+@dataclass
 class Config(Constants):
     """Global settings for this app."""
-    PUNCTUATION: str = const(default="!")
+    PUNCTUATION: ClassVar[str] = const(default="!")
 
     # name of the constant and the arg given to const() if any.
     def provide_const(self, name: str, arg: Optional[object]):

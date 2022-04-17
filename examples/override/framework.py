@@ -1,37 +1,42 @@
-"""A library or framework in another, foreign package."""
-
+"""A framework which provides default implementations."""
 from dataclasses import dataclass
+from typing import Optional, Any
 
-from antidote import inject, service, Constants, const, interface, implements
+from antidote import QualifiedBy
+from antidote.lib.interface import Predicate
+from antidote.lib.interface.interface import Weight, implements, interface
 
 
-class Config(Constants):
-    """Global settings for this app."""
-    PUNCTUATION: str = const("!")
-
-@interface
-class Greeting:
-    pass
-
-@implements(Greeting)
 @dataclass
-class DefaultGreeting(Greeting):
-    punctuation: str = Config.PUNCTUATION
-    salutation: str = "Hello"
+class Weight:
+    value: float
+
+    @classmethod
+    def of_neutral(cls, predicate: Optional[Predicate[Any]]) -> Weight:
+        if isinstance(predicate, QualifiedBy):
+            # Custom weight
+            return Weight(len(predicate.qualifiers))
+        return Weight(0)
+
+    def __lt__(self, other: Weight) -> bool:
+        return self.value < other.value
+
+    def __add__(self, other: Weight) -> Weight:
+        return Weight(self.value + other.value)
 
 
-@service
-@dataclass
-class Greeter:
-    name: str = "Marie"
-    greeting: Greeting = inject.me()
+@interface()
+class Alert:
+    name: str
 
 
-@inject
-def greeting(
-    greeter: Greeter = inject.me(),
-) -> str:
-    """Get a ``Greeter`` and return a greeting."""
-    greeting = greeter.greeting
-    salutation, punctuation = greeting.salutation, greeting.punctuation
-    return f'{salutation}, my name is {greeter.name}{punctuation}'
+class NoOverrides:
+    """A predicate to flag the default implementation of an interface."""
+
+    def weight(self) -> Weight:
+        return Weight(float('-inf'))
+
+
+@implements(Alert).when(NoOverrides())
+class DefaultAlert(Alert):
+    name = "The built-in alert"
