@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 
 from antidote import inject, service, factory, Constants, const
-from .framework import Greeting
+from .library import Greeting
 
 
 class Config(Constants):
@@ -27,11 +27,9 @@ def greeting(
     greeter: Greeter = inject.me(),
 ) -> str:
     """Get a ``Greeter`` and return a greeting."""
-    greeting = greeter.greeting
-    salutation, punctuation = greeting.salutation, greeting.punctuation
-    return f'{salutation}, my name is {greeter.name}{punctuation}'
+    g = greeter.greeting
+    return f'{g.salutation}, my name is {greeter.name}{g.punctuation}'
 
 
-def main() -> str:
-    """Main entry point for this example."""
+def main():
     return greeting()

@@ -33,6 +33,5 @@ def greeting(
     return f'{salutation}, my name is {greeter.name}{punctuation}'
 
 
-def main() -> str:
-    """Main entry point for this example."""
+def main():
     return greeting()

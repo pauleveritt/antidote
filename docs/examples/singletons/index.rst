@@ -10,7 +10,7 @@ You can customize this.
 
 This code doesn't really show it, but the second test makes it more clear:
 
-.. literalinclude:: test_not_singleton.py
+.. literalinclude:: test_singletons.py
 
 Analysis
 ========

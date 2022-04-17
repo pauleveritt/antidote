@@ -16,6 +16,5 @@ def greeting(greeter: Greeter = inject.me()) -> str:
     return f'{greeter.salutation}!'
 
 
-def main() -> str:
-    """Main entry point for this example."""
+def main():
     return greeting()

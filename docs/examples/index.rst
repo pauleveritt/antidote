@@ -36,34 +36,9 @@ The only thing missing is ``Plugin``, where third-parties can distribute cool st
     manual_dependency/index
     injection_flavors/index
     singletons/index
-
-## Datclasses
-
-We can write our services as dataclasses.
-
-## Constants
-
-Lazily evaluated.
-
-## Chained Injection
-
-Injection can depend on something which depends on something.
-
-## Factories
-
-Use service when it's a class you control.
-For "foreign" classes, or when you want a lot of control over construction without using wiring, use factory.
-This example adds ``framework.py`` to simulate something which provides a class to inject.
-
-``Greeter`` now says, during injection, where to get the ``Greeting`` from.
-Our factory function does the glue to Antidote, getting the config information and passing to the foreign class.
-
-## Override
-
-We still have ``framework.py`` but now it has the Greeter and Greeting.
-Here we show how to transparently override a built-in service simply by registering a service later.
-In this case, the service is a transitive dependency.
-
-To do so, we need symbols that don't point to specific implementations.
-Antidote provides an interface.
+    use_dataclasses/index
+    constants/index
+    chained/index
+    factories/index
+    override/index
 

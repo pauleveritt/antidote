@@ -6,9 +6,9 @@ from .framework import Greeter, greeting
 @implements(Greeter)
 class SiteGreeter(Greeter):
     """Replace the bundled ``Greeter`` with a site customization."""
-    salutation: str = "The custom alert"
+    name: str = "Marie"
+    salutation: str = "Hi"
 
 
-def main() -> str:
-    """Main entry point for this example."""
+def main():
     return greeting()

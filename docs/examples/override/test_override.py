@@ -1,7 +1,5 @@
-"""Test this example."""
 from . import main
 
 
-def test_main() -> None:
-    """Ensure the injected result matches what is expected."""
-    assert main() == "The custom alert!"
+def test_main():
+    assert main() == "Hi, my name is Marie!"

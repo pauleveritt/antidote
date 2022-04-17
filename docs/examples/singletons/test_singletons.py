@@ -11,6 +11,6 @@ def test_main():
 def test_not_singleton():
     """``MultiGreeter`` is defined as not a singleton."""
     first: MultiGreeter = world.get(MultiGreeter)
-    next: MultiGreeter = world.get(MultiGreeter)
-    assert first is not next
-    assert first.salutation is not next.salutation
+    next_: MultiGreeter = world.get(MultiGreeter)
+    assert first is not next_
+    assert first.salutation is not next_.salutation

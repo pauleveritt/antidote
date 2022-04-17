@@ -39,13 +39,14 @@ class NoOverrides:
 
 
 @implements(Greeter).when(NoOverrides())
-class DefaultAlert(Greeter):
+class DefaultGreeter(Greeter):
     """The bundled ``Greeter``."""
-    salutation: str = "The built-in alert"
+    name: str = "Fred"
+    salutation: str = "Hello"
 
 
 @inject
 def greeting() -> str:
     """Get a ``Greeter`` and return a greeting."""
     greeter: Greeter = world.get[Greeter].single()
-    return f"{greeter.salutation}!"
+    return f'{greeter.salutation}, my name is {greeter.name}!'
