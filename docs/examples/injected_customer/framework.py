@@ -1,11 +1,11 @@
 """A framework which provides default implementations."""
 from dataclasses import dataclass
-from typing import Protocol
+from typing import Protocol, Optional
 
-from antidote import QualifiedBy, world, Inject, inject, factory
+from antidote import QualifiedBy, world, service, Inject, inject, factory
 from antidote.lib.interface.interface import implements, interface
 
-VISIT_SCOPE = world.scopes.new(name="visit2")
+VISIT_SCOPE = world.scopes.new(name="visit")
 
 
 class Customer:
@@ -14,7 +14,7 @@ class Customer:
 
 @dataclass(frozen=True)
 class Visit:
-    customer: Customer
+    customer: Optional[Customer] = None
 
 
 @factory(scope=VISIT_SCOPE)

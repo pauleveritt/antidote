@@ -44,6 +44,7 @@ The only thing missing is ``Plugin``, where third-parties can distribute cool st
     vary/index
     protocols/index
     scope/index
+    injected_customer/index
 
 Next
 ====

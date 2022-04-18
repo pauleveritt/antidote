@@ -9,7 +9,7 @@ TODO Clean this example up.
 
 .. literalinclude:: __init__.py
 
-.. literalinclude:: test_hello_injection.py
+.. literalinclude:: test_basic_caching.py
 
 When you run the test, make sure to pass the ``pytest`` options to send stdout to the console.
 
