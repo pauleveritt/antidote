@@ -1,4 +1,4 @@
-"""Override a service defined in the framework."""
+"""Override a service defined as a *protocol* in the framework."""
 from antidote import implements, QualifiedBy
 
 from .framework import Customer, Greeter, greeting
@@ -9,7 +9,7 @@ class FrenchCustomer(Customer):
 
 
 @implements(Greeter).when(QualifiedBy(FrenchCustomer))
-class FrenchGreeter(Greeter):
+class FrenchGreeter:
     """The greeter to use when we have a French customer."""
     name: str = "Marie"
     salutation = "Bonjour"

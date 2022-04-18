@@ -3,52 +3,38 @@ Vary
 ****
 
 We just looked two implementations for the same "thing", with the custom one overriding the built-in one.
+What if we wanted use *either* implementation based on circumstances?
 
-
-
-
-
-
-The pluggable app in ``framework.py`` provides built-in implementations for ``Greeter`` and ``greeting``:
+Imagine the store wants a special greeter for French customers.
+All other customers should get the regular company-provided greeter.
+We start with a ``framework.py`` with a ``Greeter`` interface and a ``DefaultGreeter`` implementation:
 
 .. literalinclude:: framework.py
 
-Our "site" installs this framework package but wants to use a different ``Greeter``.
-We do this by registering our own implementation, using ``@implements``:
+The local site has a ``FrenchGreeter`` for each ``FrenchCustomer``:
 
 .. literalinclude:: __init__.py
 
 Analysis
 ========
 
-Lots going on here.
-But it's the beginning of using Antidote for pluggable systems, where multiple implementation classes might exist for the same service.
+The biggest change here is actually in ``greeting``.
+It is no longer marked with ``@inject``.
+It instead uses manual dependency injection, acting as a dispatcher based on the passed-in customer type.
+As such, it is called "per-request".
+We'll show later how to get each ``Customer`` into the ``world`` to let it be injected.
 
-In this case we have a concept of a ``Greeter``.
-In ``framework.py`` this is represented by an interface -- that is, ``@interface`` registers the idea of a ``Greeter`` in the Antidote ``world``.
-There's nothing (currently) special about it -- just make a class (so it can be a type).
-The class could just have ``pass`` with no members.
+Each ``Greeter`` implementation must be a subclass of ``Greeter``.
+Otherwise you'll get an Antidote error at startup.
+We'll see in the next section how to use protocols to avoid the need to subclass.
 
-Once you this ``Greeter`` concept -- an "interface" -- you can then provide implementations for it that Antidote will choose from.
-The "framework" provides one in a ``DefaultGreeter`` class.
-It's important for the implementation to subclass from ``Greeter``, so it will be a subtype.
-Otherwise, Antidote will raise an import-time error.
-TODO Even better, ``mypy`` will warn you during static analysis.
+Note that ``QualifiedBy`` is a mandatory, exact match on the provided value.
+We'll look in future sections on more flexible predicates.
 
-It's the line above the class that does the magic.
-``@implements`` is a way to say "this class is an implmentation of that interface."
-This statement is done in a way compatible with Python static type checking (which isn't easy), while also flexible.
-You use the ``.when()`` clause to say in which cases Antidote should choose this implementation.
+What if we didn't register ``FrenchGreeter``?
+Since ``FrenchCustomer`` is a type of ``Customer``, would ``DefaultGreeter`` match it?
+No, because ``QualifiedBy`` uses an ``isinstance`` check.
+You would write a modified ``QualifiedBy`` which used typing.
 
-The conditions for a ``.when()`` are known as "predicates".
-They are extensible.
-In this case, we wrote our own, but it's likely the "overrides" pattern is common enough that Antidote will bundle its own.
 
-With that in place, our little pluggable app has an overridable ``Greeter``.
-Our usage in ``__init__.py`` simply has to say ``@implements(Greeter)`` and ``SiteGreeter`` "overrides" the ``DefaultGreeter``.
-
-At runtime, we call ``greeting()`` which is bundled with the framework.
-It depends on ``Greeting``, but we don't have to fork it to point at our new ``SiteGreeter``.
-This is a powerful and useful concept for building pluggable apps.
-
-Full code: :download:`__init__.py`, :download:`framework.py`, and :download:`test_override.py`.
+Full code: :download:`__init__.py`, :download:`framework.py`, and :download:`test_vary.py`.

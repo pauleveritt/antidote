@@ -1,5 +1,5 @@
 """A framework which provides default implementations."""
-from typing import Type
+from typing import Type, Protocol
 
 from antidote import QualifiedBy, world
 from antidote.lib.interface.interface import implements, interface
@@ -10,14 +10,14 @@ class Customer:
 
 
 @interface()
-class Greeter:
+class Greeter(Protocol):
     """A way to talk about all variations of a ``Greeter``."""
     name: str
     salutation: str
 
 
 @implements(Greeter).when(QualifiedBy(Customer))
-class DefaultGreeter(Greeter):
+class DefaultGreeter:
     """The bundled ``Greeter``."""
     name: str = "Fred"
     salutation: str = "Hello"
