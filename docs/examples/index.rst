@@ -43,11 +43,12 @@ The only thing missing is ``Plugin``, where third-parties can distribute cool st
     override/index
     vary/index
     protocols/index
+    scope/index
 
 Next
 ====
 
+- Scope, caching, and only rebuilding what is needed
 - Best match
-- Protocols
 - Provider
 - Components

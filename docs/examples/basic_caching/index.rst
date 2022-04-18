@@ -1,0 +1,20 @@
+*************
+Basic Caching
+*************
+
+Services are singletons by default.
+Once they are constructed, any future injections use the existing instance.
+
+TODO Clean this example up.
+
+.. literalinclude:: __init__.py
+
+.. literalinclude:: test_hello_injection.py
+
+When you run the test, make sure to pass the ``pytest`` options to send stdout to the console.
+
+Analysis
+========
+
+
+Full code: :download:`__init__.py` and :download:`test_basic_caching.py`.
