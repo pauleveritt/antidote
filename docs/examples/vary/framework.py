@@ -28,6 +28,7 @@ class Weight:
 @interface()
 class Greeter:
     """A way to talk about all variations of a ``Greeter``."""
+    name: str
     salutation: str
 
 
@@ -46,6 +47,7 @@ class DefaultGreeter(Greeter):
 
 
 @inject
-def greeting(greeter: Greeter = inject.impl()) -> str:
+def greeting() -> str:
     """Get a ``Greeter`` and return a greeting."""
+    greeter: Greeter = world.get[Greeter].single()
     return f"{greeter.salutation}, my name is {greeter.name}!"

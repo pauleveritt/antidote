@@ -41,4 +41,5 @@ The only thing missing is ``Plugin``, where third-parties can distribute cool st
     chained/index
     factories/index
     override/index
+    vary/index
 
